@@ -3,8 +3,7 @@ const express = require('express')
 const app = express()
 const cors = require('cors')
 const mongoose = require('mongoose')
-
-require('dotenv').config()
+const {PORT, MONGODB_URI} = require('./utils/config')
 
 const blogSchema = mongoose.Schema({
   title: String,
@@ -15,7 +14,7 @@ const blogSchema = mongoose.Schema({
 
 const Blog = mongoose.model('Blog', blogSchema)
 
-mongoose.connect(process.env.MONGODB_URL)
+mongoose.connect(MONGODB_URI)
 
 app.use(cors())
 app.use(express.json())
@@ -38,7 +37,6 @@ app.post('/api/blogs', (request, response) => {
     })
 })
 
-const PORT = 3003
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
