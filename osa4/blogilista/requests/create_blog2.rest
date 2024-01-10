@@ -1,0 +1,9 @@
+POST http://localhost:3003/api/blogs
+Content-Type: application/json
+
+{
+    "author": "Silja Silvonen",
+    "title": "Maastopyörällä Mäntsälään",
+    "url": "http://www.bikemanstala.com",
+    "likes": 0
+}
