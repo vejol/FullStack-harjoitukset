@@ -1,4 +1,5 @@
 const express = require('express')
+const logger = require('./utils/logger')
 
 const app = express()
 const cors = require('cors')
@@ -14,5 +15,5 @@ app.use(express.json())
 app.use('/api/blogs', blogsRouter)
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+  logger.info(`Server running on port ${PORT}`)
 })
