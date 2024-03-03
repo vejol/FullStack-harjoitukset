@@ -5,5 +5,6 @@ Content-Type: application/json
     "author": "Kimmo Kimpele",
     "title": "Leivotaan rukiista",
     "url": "http://kimmoleipoo.fi",
-    "likes": 10
+    "likes": 10,
+    "UserId": "65e1e2f1132506282a05c20f"
 }
