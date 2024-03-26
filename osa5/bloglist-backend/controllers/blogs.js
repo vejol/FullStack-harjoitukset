@@ -12,7 +12,6 @@ blogsRouter.get('/', async (request, response) => {
 blogsRouter.post('/', async (request, response) => {
 
   const user = request.user
-
   if (!(user && request.token)) {
     return response.status(401).end()
   }
@@ -31,7 +30,6 @@ blogsRouter.post('/', async (request, response) => {
 
   const savedBlog = await blog.save()
   await savedBlog.populate('user', { username: 1, name: 1 })
-  console.log('saved blog: ', savedBlog)
   user.blogs = user.blogs.concat(savedBlog._id)
   await user.save()
   response.status(201).json(savedBlog)

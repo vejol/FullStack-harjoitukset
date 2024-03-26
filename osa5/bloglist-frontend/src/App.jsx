@@ -27,6 +27,7 @@ const App = () => {
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
       setUser(user)
+      blogService.setToken(user.token)
     }
   }, [])
 
@@ -117,13 +118,13 @@ const App = () => {
       {!user && loginForm()}
       {user && <div>
         <p>{user.name} logged in
-          <button onClick={handleLogout}>logout</button>
+          <button id="logout-button" onClick={handleLogout}>logout</button>
         </p>
         <Togglable buttonLabel="new blog" ref={blogFormRef}>
           <BlogForm createBlog={addBlog} />
         </Togglable>
 
-        {blogs.sort((a, b) => a.likes - b.likes).map(blog =>
+        {blogs.sort((a, b) => b.likes - a.likes).map(blog =>
           <Blog key={blog.id} blog={blog} addLike={addLike} removeBlog={removeBlog} user={user} />
         )}
       </div>
