@@ -1,0 +1,42 @@
+{
+  "notes": [
+    {
+      "id": 1,
+      "content": "custom-hooks are awesome!"
+    },
+    {
+      "id": 2,
+      "content": "best feature ever <3"
+    },
+    {
+      "content": "Hello from web!",
+      "id": 3
+    },
+    {
+      "content": "Remember to remove clogs",
+      "id": 4
+    }
+  ],
+  "persons": [
+    {
+      "id": 1,
+      "name": "mluukkai",
+      "number": "040-5483923"
+    },
+    {
+      "id": 2,
+      "name": "hellas",
+      "number": "012-123123"
+    },
+    {
+      "name": "Arto Aras",
+      "number": "043-234543",
+      "id": 3
+    },
+    {
+      "name": "Pekka Paras",
+      "number": "040-024443",
+      "id": 4
+    }
+  ]
+}
