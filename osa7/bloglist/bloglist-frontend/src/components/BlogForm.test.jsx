@@ -3,7 +3,6 @@ import userEvent from '@testing-library/user-event'
 import BlogForm from './BlogForm'
 
 test('calls the callback function with correct parameters when form is submitted', async () => {
-
   const createBlog = vi.fn()
 
   const { container } = render(<BlogForm createBlog={createBlog} />)
@@ -25,5 +24,4 @@ test('calls the callback function with correct parameters when form is submitted
   expect(createBlog.mock.calls[0][0].title).toBe('This is blog title')
   expect(createBlog.mock.calls[0][0].author).toBe('Arthur Author')
   expect(createBlog.mock.calls[0][0].url).toBe('titlestomake.com')
-
 })

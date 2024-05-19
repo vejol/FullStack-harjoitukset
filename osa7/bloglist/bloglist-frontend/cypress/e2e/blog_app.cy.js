@@ -4,7 +4,7 @@ describe('Blog app', function () {
     const user = {
       name: 'Silja Silvonen',
       username: 'siljasi',
-      password: 'password123'
+      password: 'password123',
     }
     cy.request('POST', `${Cypress.env('BACKEND')}/users/`, user)
     cy.visit('')
@@ -32,12 +32,12 @@ describe('Blog app', function () {
     })
   })
 
-  describe('When logged in', function() {
-    beforeEach(function() {
+  describe('When logged in', function () {
+    beforeEach(function () {
       cy.login({ username: 'siljasi', password: 'password123' })
     })
 
-    it('A blog can be created', function() {
+    it('A blog can be created', function () {
       const newBlog = {
         title: 'My first food blog',
         author: 'Fiola Foodorer',
@@ -52,49 +52,46 @@ describe('Blog app', function () {
       cy.contains(`${newBlog.title} ${newBlog.author}`)
     })
 
-    describe('and when three blogs is added', function() {
-      beforeEach(function() {
+    describe('and when three blogs is added', function () {
+      beforeEach(function () {
         cy.createBlog({
           title: 'My first food blog',
           author: 'Fiola Foodorer',
-          url: 'www.fiolasfood.com'
+          url: 'www.fiolasfood.com',
         })
 
         cy.createBlog({
           title: 'My second food blog',
           author: 'Fiola Foodorer',
-          url: 'www.fiolasfoodtwo.com'
+          url: 'www.fiolasfoodtwo.com',
         })
-        
+
         cy.createBlog({
           title: 'Mountain bikes and adventures',
           author: 'Mauris Marittis',
-          url: 'www.maurisbikes.com'
+          url: 'www.maurisbikes.com',
         })
       })
 
-      
-
-      it('pressing like button once add one like', function() {
+      it('pressing like button once add one like', function () {
         cy.contains('My first food blog').as('Blog')
         cy.get('@Blog').find('.view-button').click()
         cy.get('@Blog').parent().find('.like-button').click()
         cy.get('@Blog').parent().find('.likes-div').contains('1')
       })
 
-      it('blog can be deleted by the preson who added it', function() {
+      it('blog can be deleted by the preson who added it', function () {
         cy.contains('My first food blog').as('Blog')
         cy.get('@Blog').find('.view-button').click()
         cy.get('@Blog').parent().find('.remove-button').click()
         cy.get('html').should('not.contain', 'My first food blog')
-
       })
 
-      it(`remove button is visible only for user who added the blog`, function() {
+      it(`remove button is visible only for user who added the blog`, function () {
         const user2 = {
           name: 'Kalle Kalvanen',
           username: 'kalleka',
-          password: 'kalle123'
+          password: 'kalle123',
         }
         cy.request('POST', `${Cypress.env('BACKEND')}/users/`, user2)
 
@@ -106,7 +103,7 @@ describe('Blog app', function () {
         cy.get('@Blog').parent().should('not.contain', 'remove')
       })
 
-      it.only('blogs are arranged in descending order by likes', function() {
+      it.only('blogs are arranged in descending order by likes', function () {
         cy.contains('My first food blog').as('Blog1')
         cy.contains('My second food blog').as('Blog2')
         cy.contains('Mountain bikes and adventures').as('Blog3')

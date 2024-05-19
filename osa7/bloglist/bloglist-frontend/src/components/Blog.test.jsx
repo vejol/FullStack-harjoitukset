@@ -9,8 +9,8 @@ const blog = {
   likes: 3,
   user: {
     id: 1234,
-    name: 'Bertta Bloguser'
-  }
+    name: 'Bertta Bloguser',
+  },
 }
 
 const user = {
@@ -22,7 +22,6 @@ const user = {
 const mockAddLike = vi.fn()
 
 test('renders title and author but not url nor likes as default', async () => {
-
   render(<Blog blog={blog} />)
 
   screen.getByText('Writing test blogs', { exact: false })
@@ -36,7 +35,6 @@ test('renders title and author but not url nor likes as default', async () => {
 })
 
 test('renders all fields after view button is pressed', async () => {
-
   render(<Blog blog={blog} user={user} />)
 
   const testUser = userEvent.setup()
@@ -50,7 +48,6 @@ test('renders all fields after view button is pressed', async () => {
 })
 
 test('calls event handler twice when like button is pressed twice', async () => {
-
   render(<Blog blog={blog} user={user} addLike={mockAddLike} />)
 
   const testUser = userEvent.setup()

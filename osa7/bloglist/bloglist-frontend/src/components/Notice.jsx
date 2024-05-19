@@ -3,11 +3,7 @@ const Notice = ({ message }) => {
     return null
   }
 
-  return (
-    < div className="notice" >
-      {message}
-    </div >
-  )
+  return <div className="notice">{message}</div>
 }
 
 export default Notice
