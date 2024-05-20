@@ -103,7 +103,7 @@ describe('Blog app', function () {
         cy.get('@Blog').parent().should('not.contain', 'remove')
       })
 
-      it.only('blogs are arranged in descending order by likes', function () {
+      it('blogs are arranged in descending order by likes', function () {
         cy.contains('My first food blog').as('Blog1')
         cy.contains('My second food blog').as('Blog2')
         cy.contains('Mountain bikes and adventures').as('Blog3')
