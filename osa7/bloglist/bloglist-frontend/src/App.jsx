@@ -1,143 +1,113 @@
-import { useState, useEffect, useRef } from 'react'
-import Blog from './components/Blog'
-import ErrorNotification from './components/ErrorNotification'
-import Notice from './components/Notice'
-import BlogForm from './components/BlogForm'
-import Togglable from './components/Togglable'
+import { useState, useEffect, createRef } from 'react'
+
 import blogService from './services/blogs'
 import loginService from './services/login'
+import storage from './services/storage'
+import Login from './components/Login'
+import Blog from './components/Blog'
+import NewBlog from './components/NewBlog'
+import Notification from './components/Notification'
+import Togglable from './components/Togglable'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
-  const [user, setUser] = useState('')
-  const [errorMessage, setErrorMessage] = useState(null)
-  const [noticeMessage, setNoticeMessage] = useState(null)
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const blogFormRef = useRef()
+  const [user, setUser] = useState(null)
+  const [notification, setNotification] = useState(null)
 
   useEffect(() => {
     blogService.getAll().then((blogs) => setBlogs(blogs))
   }, [])
 
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
-    if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON)
+    const user = storage.loadUser()
+    if (user) {
       setUser(user)
-      blogService.setToken(user.token)
     }
   }, [])
 
-  const addBlog = (blogObject) => {
+  const blogFormRef = createRef()
+
+  const notify = (message, type = 'success') => {
+    setNotification({ message, type })
+    setTimeout(() => {
+      setNotification(null)
+    }, 5000)
+  }
+
+  const handleLogin = async (credentials) => {
+    try {
+      const user = await loginService.login(credentials)
+      setUser(user)
+      storage.saveUser(user)
+      notify(`Welcome back, ${user.name}`)
+    } catch (error) {
+      notify('Wrong credentials', 'error')
+    }
+  }
+
+  const handleCreate = async (blog) => {
+    const newBlog = await blogService.create(blog)
+    setBlogs(blogs.concat(newBlog))
+    notify(`Blog created: ${newBlog.title}, ${newBlog.author}`)
     blogFormRef.current.toggleVisibility()
-    blogService.create(blogObject).then((returnedBlog) => {
-      setBlogs(blogs.concat(returnedBlog))
-      setNoticeMessage(`a new blog ${returnedBlog.title} added`)
-      setTimeout(() => {
-        setNoticeMessage(null)
-      }, 5000)
+  }
+
+  const handleVote = async (blog) => {
+    console.log('updating', blog)
+    const updatedBlog = await blogService.update(blog.id, {
+      ...blog,
+      likes: blog.likes + 1,
     })
+
+    notify(`You liked ${updatedBlog.title} by ${updatedBlog.author}`)
+    setBlogs(blogs.map((b) => (b.id === blog.id ? updatedBlog : b)))
   }
 
-  const addLike = async (blog) => {
-    const modifiedBlog = await blogService.addLike(blog)
-    const newBlogs = blogs
-      .filter((blog) => blog.id !== modifiedBlog.id)
-      .concat(modifiedBlog)
-    setBlogs(newBlogs)
+  const handleLogout = () => {
+    setUser(null)
+    storage.removeUser()
+    notify(`Bye, ${user.name}!`)
   }
 
-  const removeBlog = async (blog) => {
-    if (window.confirm(`Remove blog ${blog.title} by ${blog.author}?`)) {
+  const handleDelete = async (blog) => {
+    if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
       await blogService.remove(blog.id)
       setBlogs(blogs.filter((b) => b.id !== blog.id))
+      notify(`Blog ${blog.title}, by ${blog.author} removed`)
     }
   }
 
-  const loginForm = () => (
-    <form onSubmit={handleLogin}>
-      <h2>log in</h2>
+  if (!user) {
+    return (
       <div>
-        username
-        <input
-          type="text"
-          value={username}
-          id="username"
-          onChange={({ target }) => setUsername(target.value)}
-        />
+        <h2>blogs</h2>
+        <Notification notification={notification} />
+        <Login doLogin={handleLogin} />
       </div>
-      <div>
-        password
-        <input
-          type="password"
-          value={password}
-          id="password"
-          onChange={({ target }) => setPassword(target.value)}
-        />
-      </div>
-      <button id="login-button" type="submit">
-        login
-      </button>
-    </form>
-  )
-
-  const handleLogin = async (event) => {
-    event.preventDefault()
-    try {
-      const user = await loginService.login({
-        username,
-        password,
-      })
-      window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user))
-      blogService.setToken(user.token)
-      setUser(user)
-      setUsername('')
-      setPassword('')
-    } catch (exception) {
-      setErrorMessage('wrong credentials')
-      setTimeout(() => {
-        setErrorMessage(null)
-      }, 5000)
-    }
+    )
   }
 
-  const handleLogout = (event) => {
-    window.localStorage.removeItem('loggedBlogappUser')
-    setUser('')
-  }
+  const byLikes = (a, b) => b.likes - a.likes
 
   return (
     <div>
       <h2>blogs</h2>
-      <ErrorNotification message={errorMessage} />
-      <Notice message={noticeMessage} />
-      {!user && loginForm()}
-      {user && (
-        <div>
-          <p>
-            {user.name} logged in
-            <button id="logout-button" onClick={handleLogout}>
-              logout
-            </button>
-          </p>
-          <Togglable buttonLabel="new blog" ref={blogFormRef}>
-            <BlogForm createBlog={addBlog} />
-          </Togglable>
-
-          {blogs
-            .sort((a, b) => b.likes - a.likes)
-            .map((blog) => (
-              <Blog
-                key={blog.id}
-                blog={blog}
-                addLike={addLike}
-                removeBlog={removeBlog}
-                user={user}
-              />
-            ))}
-        </div>
-      )}
+      <Notification notification={notification} />
+      <div>
+        {user.name} logged in
+        <button onClick={handleLogout}>logout</button>
+      </div>
+      <Togglable buttonLabel="create new blog" ref={blogFormRef}>
+        <NewBlog doCreate={handleCreate} />
+      </Togglable>
+      {blogs.sort(byLikes).map((blog) => (
+        <Blog
+          key={blog.id}
+          blog={blog}
+          handleVote={handleVote}
+          handleDelete={handleDelete}
+        />
+      ))}
     </div>
   )
 }

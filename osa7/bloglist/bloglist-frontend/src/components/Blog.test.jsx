@@ -1,63 +1,53 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { describe, test } from 'vitest'
+
 import Blog from './Blog'
 
-const blog = {
-  title: 'Writing test blogs',
-  author: 'Timo Tester',
-  url: 'www.testblogs.com',
-  likes: 3,
-  user: {
-    id: 1234,
-    name: 'Bertta Bloguser',
-  },
-}
+describe('Blog', () => {
+  const blog = {
+    title: 'Testing the testing',
+    url: 'http://example.com',
+    author: 'Ted Tester',
+    likes: 10,
+  }
 
-const user = {
-  id: 1234,
-  username: 'berttab',
-  name: 'Bertta Bloguser',
-}
+  test('renders only tile and author by default', () => {
+    render(<Blog blog={blog} handleVote={vi.fn()} handleDelete={vi.fn()} />)
 
-const mockAddLike = vi.fn()
+    expect(
+      screen.getByText('Testing the testing', { exact: false })
+    ).toBeDefined()
+    expect(
+      screen.queryByText('http://example.com', { exact: false })
+    ).toBeNull()
+  })
 
-test('renders title and author but not url nor likes as default', async () => {
-  render(<Blog blog={blog} />)
+  test('renders url and likes after clicking view', async () => {
+    const user = userEvent.setup()
 
-  screen.getByText('Writing test blogs', { exact: false })
-  screen.getByText('Timo Tester', { exact: false })
+    render(<Blog blog={blog} handleVote={vi.fn()} handleDelete={vi.fn()} />)
+    const button = screen.getByText('view')
+    await user.click(button)
 
-  const url = screen.queryByText(blog.url)
-  expect(url).toBeNull()
+    expect(
+      screen.getByText('http://example.com', { exact: false })
+    ).toBeDefined()
+    expect(screen.getByText('likes 10', { exact: false })).toBeDefined()
+  })
 
-  const likes = screen.queryByText(blog.likes)
-  expect(likes).toBeNull()
-})
+  test('clicking like twice calls event handler twice', async () => {
+    const handleVote = vi.fn()
+    const user = userEvent.setup()
 
-test('renders all fields after view button is pressed', async () => {
-  render(<Blog blog={blog} user={user} />)
+    render(<Blog blog={blog} handleVote={handleVote} handleDelete={vi.fn()} />)
+    const button = screen.getByText('view')
+    await user.click(button)
 
-  const testUser = userEvent.setup()
-  const button = screen.getByText('view')
-  await testUser.click(button)
+    const likeButton = screen.getByText('like')
+    await user.click(likeButton)
+    await user.click(likeButton)
 
-  screen.getByText('Writing test blogs', { exact: false })
-  screen.getByText('Timo Tester', { exact: false })
-  screen.getByText('www.testblogs.com', { exact: false })
-  screen.getByText('likes 3', { exact: false })
-})
-
-test('calls event handler twice when like button is pressed twice', async () => {
-  render(<Blog blog={blog} user={user} addLike={mockAddLike} />)
-
-  const testUser = userEvent.setup()
-
-  const viewButton = screen.getByText('view')
-  await testUser.click(viewButton)
-
-  const likeButton = screen.getByText('like')
-  await testUser.click(likeButton)
-  await testUser.click(likeButton)
-
-  expect(mockAddLike.mock.calls).toHaveLength(2)
+    expect(handleVote.mock.calls).toHaveLength(2)
+  })
 })
