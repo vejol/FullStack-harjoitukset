@@ -1,4 +1,8 @@
-const Notification = ({ notification }) => {
+import { useSelector } from 'react-redux'
+
+const Notification = () => {
+  const notification = useSelector((state) => state.notification)
+
   if (!notification) {
     return null
   }
@@ -10,7 +14,7 @@ const Notification = ({ notification }) => {
     margin: '10px',
     padding: '10px',
     border: '2px solid',
-    borderColor: type === 'success' ? 'green' : 'red',
+    borderColor: type === 'error' ? 'red' : 'green',
     borderRadius: '5px',
   }
 
