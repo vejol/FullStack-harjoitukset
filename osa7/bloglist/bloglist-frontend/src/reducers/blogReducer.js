@@ -22,6 +22,13 @@ const blogSlice = createSlice({
   },
 })
 
+export const modifyBlog = (blog) => {
+  return async (dispatch) => {
+    const updatedBlog = await blogService.update(blog.id, blog)
+    dispatch(replaceBlog(updatedBlog))
+  }
+}
+
 export const addVote = (blog) => {
   return async (dispatch) => {
     const updatedBlog = await blogService.update(blog.id, {

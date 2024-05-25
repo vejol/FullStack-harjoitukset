@@ -1,25 +1,22 @@
-import { useEffect, createRef } from 'react'
+import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { Routes, Route, Link, useNavigate } from 'react-router-dom'
 
 import { notify } from './reducers/notificationReducer'
 import storage from './services/storage'
 import Login from './components/Login'
-import Blog from './components/Blog'
-import NewBlog from './components/NewBlog'
 import Notification from './components/Notification'
-import Togglable from './components/Togglable'
-import { createBlog, initializeBlogs } from './reducers/blogReducer'
+import User from './components/User'
+import Users from './components/Users'
+import Blog from './components/Blog'
+import Blogs from './components/Blogs'
 import { setUser, loginUser, removeUser } from './reducers/userReducer'
+import { Nav, Navbar } from 'react-bootstrap'
 
 const App = () => {
-  const dispatch = useDispatch()
-
-  useEffect(() => {
-    dispatch(initializeBlogs())
-  }, [])
-
-  const blogs = useSelector((state) => state.blogs)
   const user = useSelector((state) => state.user)
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const user = storage.loadUser()
@@ -28,49 +25,59 @@ const App = () => {
     }
   }, [])
 
-  const blogFormRef = createRef()
-
   const handleLogin = async (credentials) => {
     dispatch(loginUser(credentials))
-  }
-
-  const handleCreate = async (blog) => {
-    dispatch(createBlog(blog))
-    dispatch(notify(`Blog created: ${blog.title}, ${blog.author}`))
-    blogFormRef.current.toggleVisibility()
   }
 
   const handleLogout = () => {
     dispatch(removeUser())
     dispatch(notify(`Bye, ${user.name}!`))
+    navigate('/')
   }
 
   if (!user) {
     return (
-      <div>
-        <h2>blogs</h2>
+      <div className="container">
+        <h2>Blog app</h2>
         <Notification />
         <Login doLogin={handleLogin} />
       </div>
     )
   }
 
-  const byLikes = (a, b) => b.likes - a.likes
-
   return (
-    <div>
-      <h2>blogs</h2>
+    <div className="container">
+      <Navbar expand="lg" style={{ backgroundColor: 'lightgrey' }}>
+        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+        <Navbar.Collapse id="responsive-navbar-nav">
+          <Nav className="mr-auto">
+            <Nav.Link href="#" as="span">
+              <Link to="/">blogs</Link>
+            </Nav.Link>
+            <Nav.Link href="#" as="span">
+              <Link to="/users">users</Link>
+            </Nav.Link>
+            <Nav.Link href="#" as="span">
+              {user && (
+                <>
+                  {user.name} logged in
+                  <button onClick={handleLogout}>logout</button>
+                </>
+              )}
+            </Nav.Link>
+          </Nav>
+        </Navbar.Collapse>
+      </Navbar>
+
+      <h2>Blog app</h2>
+      <br />
       <Notification />
-      <div>
-        {user.name} logged in
-        <button onClick={handleLogout}>logout</button>
-      </div>
-      <Togglable buttonLabel="create new blog" ref={blogFormRef}>
-        <NewBlog doCreate={handleCreate} />
-      </Togglable>
-      {[...blogs].sort(byLikes).map((blog) => (
-        <Blog key={blog.id} blog={blog} />
-      ))}
+      <Routes>
+        <Route path="/" element={<Blogs />} />
+        <Route path="/blogs/:id" element={<Blog />} />
+        <Route path="/users" element={<Users />} />
+        <Route path="/users/:id" element={<User />} />
+      </Routes>
     </div>
   )
 }

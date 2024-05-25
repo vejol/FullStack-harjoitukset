@@ -1,16 +1,28 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 
-blogsRouter.get('/', async (request, response) => {
-  const blogs = await Blog
-    .find({})
-    .populate('user', { username: 1, name: 1 })
-  response.json(blogs)
+blogsRouter.post('/:id/comments', async (request, response) => {
+  const user = request.user
+  if (!(user && request.token)) {
+    return response.status(401).end()
+  }
 
+  const blog = await Blog.findById(request.params.id)
+  blog.comments.push(request.body.comment)
+
+  await Blog.findByIdAndUpdate(request.params.id, blog, {
+    new: true,
+    runValidators: true,
+    context: 'query',
+  }).populate('user', { username: 1, name: 1 })
+})
+
+blogsRouter.get('/', async (request, response) => {
+  const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
+  response.json(blogs)
 })
 
 blogsRouter.post('/', async (request, response) => {
-
   const user = request.user
   if (!(user && request.token)) {
     return response.status(401).end()
@@ -21,7 +33,7 @@ blogsRouter.post('/', async (request, response) => {
     title: request.body.title,
     author: request.body.author,
     likes: request.body.likes || 0,
-    user: user._id
+    user: user._id,
   })
 
   if (!blog.title || !blog.url) {
@@ -36,7 +48,6 @@ blogsRouter.post('/', async (request, response) => {
 })
 
 blogsRouter.delete('/:id', async (request, response) => {
-
   if (!request.token) {
     return response.status(401).end()
   }
@@ -54,22 +65,18 @@ blogsRouter.delete('/:id', async (request, response) => {
 blogsRouter.put('/:id', async (request, response) => {
   const blog = {
     ...request.body,
-    likes: request.body.likes || 0
+    likes: request.body.likes || 0,
   }
 
   if (!blog.title || !blog.url) {
     return response.status(400).end()
   }
 
-  const updatedBlog = await Blog.findByIdAndUpdate(
-    request.params.id,
-    blog,
-    {
-      new: true,
-      runValidators: true,
-      context: 'query'
-    }
-  ).populate('user', { username: 1, name: 1 })
+  const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, {
+    new: true,
+    runValidators: true,
+    context: 'query',
+  }).populate('user', { username: 1, name: 1 })
 
   response.status(201).json(updatedBlog)
 })
